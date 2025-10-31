@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SAURABH - AI</title>
+<meta name="description" content="SAURABH - AI — Demo Chat (offline). Hosted by you." />
+<style>
+  :root{--bg:#071026;--accent1:#06b6d4;--accent2:#7c3aed;--muted:#9fb3c9}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#eaf6ff}
+  .wrap{max-width:980px;margin:20px auto;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.02)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(90deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#071017;font-family:Arial,Helvetica,sans-serif}
+  h1{font-size:18px;margin:0}
+  .muted{color:var(--muted);font-size:13px}
+
+  .main{display:flex;gap:18px;padding:18px}
+  .left{flex:1;display:flex;flex-direction:column;min-height:60vh}
+  .messages{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,transparent, rgba(0,0,0,0.02))}
+  .bubble{max-width:78%;padding:12px;border-radius:12px;line-height:1.45;word-wrap:break-word}
+  .user{align-self:flex-end;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#031018}
+  .ai{align-self:flex-start;background:#071428;border:1px solid rgba(255,255,255,0.02);color:#cfeeff}
+
+  .composer{display:flex;gap:10px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.02);align-items:flex-end}
+  textarea{flex:1;min-height:48px;max-height:160px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.01);color:inherit;resize:vertical}
+  .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#031018;font-weight:800;cursor:pointer}
+
+  .right{width:320px}
+  .panel{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02)}
+  .section{margin-bottom:12px}
+  input{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.01);color:inherit}
+  select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:rgba(255,255,255,0.01);color:inherit}
+  .small{font-size:13px;color:var(--muted)}
+  pre { color: #cbd5e1; background: #02101a; padding:8px; border-radius:6px; overflow:auto; font-size:12px }
+
+  footer{padding:12px;text-align:center;color:var(--muted);font-size:13px}
+  @media(max-width:920px){.main{flex-direction:column}.right{width:auto}}
+</style>
+</head>
+<body>
+  <div class="wrap" role="application" aria-label="SAURABH - AI">
+    <header>
+      <div class="brand">
+        <div class="logo">SS</div>
+        <div>
+          <h1>SAURABH - AI</h1>
+          <div class="muted">Demo chat — Hosted by you</div>
+        </div>
+      </div>
+      <div class="muted" id="status">Mode: Demo (offline)</div>
+    </header>
+
+    <div class="main">
+      <div class="left">
+        <div class="messages" id="messages" aria-live="polite">
+          <div class="bubble ai">Hello — I'm SAURABH - AI. This is demo mode. For live GPT replies, connect a backend later.</div>
+        </div>
+
+        <div style="padding:12px" class="composer">
+          <textarea id="input" placeholder="Type your message... (Enter to send, Shift+Enter newline)"></textarea>
+          <button class="btn" id="sendBtn">Send</button>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="panel">
+          <div class="section">
+            <label class="small">Backend URL (optional — leave empty for demo)</label>
+            <input id="backendUrl" placeholder="https://us-central1-PROJECT_ID.cloudfunctions.net" />
+            <div class="small" style="margin-top:6px">If you later deploy the secure function, paste its origin here and set Mode → Live.</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="connectBtn" class="btn">Connect</button>
+              <button id="disconnectBtn" class="btn" style="background:#374151;color:#fff">Disconnect</button>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="small">Mode</div>
+            <select id="modeSelect" style="margin-top:6px">
+              <option value="demo">Demo (offline)</option>
+              <option value="api">Live GPT (via backend)</option>
+            </select>
+          </div>
+
+          <div class="section">
+            <div class="small" style="margin-bottom:6px">Contact Email</div>
+            <input id="contactEmail" value="dimplesingh15658@gmail.com" />
+          </div>
+
+          <div class="section">
+            <div class="small">Controls</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button id="clearBtn" class="btn" style="background:#374151">New Chat</button>
+              <button id="downloadConv" class="btn">Download Conversation</button>
+            </div>
+          </div>
+
+          <div class="section small">
+            <div>Debug / Last API Response</div>
+            <pre id="lastResponse">No API calls yet.</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>© <span id="year"></span> SAURABH SINGH — NeonAI</footer>
+  </div>
+
+<script>
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const backendInput = document.getElementById('backendUrl');
+const connectBtn = document.getElementById('connectBtn');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const modeSelect = document.getElementById('modeSelect');
+const statusEl = document.getElementById('status');
+const clearBtn = document.getElementById('clearBtn');
+const downloadConvBtn = document.getElementById('downloadConv');
+const contactEmailEl = document.getElementById('contactEmail');
+const lastResponseEl = document.getElementById('lastResponse');
+const STORAGE_KEY = 'saurabh_ai_conv_v2';
+
+let backendOrigin = '';
+let conversation = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function now() { return new Date().toLocaleString(); }
+function render() {
+  messagesEl.innerHTML = '';
+  for (const m of conversation) {
+    const d = document.createElement('div');
+    d.className = 'bubble ' + (m.role === 'user' ? 'user' : 'ai');
+    d.innerHTML = `<div>${escapeHtml(m.content)}</div><div style="font-size:12px;color:#9fb3c9;margin-top:6px">${m.role === 'user' ? 'You' : 'SAURABH AI'} • ${m.ts}</div>`;
+    messagesEl.appendChild(d);
+  }
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+render();
+
+function appendLocal(role, content) {
+  const item = { role, content, ts: now() };
+  conversation.push(item);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(conversation));
+  render();
+}
+
+function demoReply(userText) {
+  const t = (userText || '').trim().toLowerCase();
+  if (!t) return "Hello — I'm SAURABH - AI. How can I assist you today?";
+  if (t.includes('hello') || t.includes('hi')) return "Hello! I'm SAURABH - AI. Ask me anything.";
+  if (t.includes('email') || t.includes('contact')) return `You can contact me at ${contactEmailEl.value}`;
+  if (t.includes('prime minister') || t.includes('pm of india')) return "Demo mode: I can't query live facts. Switch to Live mode to get real GPT answers.";
+  if (t.length < 20) return "Thanks — can you add more details? I can draft messages, summarize, or suggest improvements.";
+  return `You said: "${userText}". For deeper replies, connect the backend to use GPT.`;
+}
+
+function simulateTypingThenReply(text, cb) {
+  const typing = document.createElement('div');
+  typing.className = 'bubble ai';
+  typing.textContent = 'SAURABH AI is typing...';
+  messagesEl.appendChild(typing);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  setTimeout(()=> {
+    typing.remove();
+    cb();
+  }, 700 + Math.random()*800);
+}
+
+sendBtn.addEventListener('click', onSend);
+inputEl.addEventListener('keydown', (e)=> { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } });
+
+async function onSend() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  appendLocal('user', text);
+  inputEl.value = '';
+  const mode = modeSelect.value;
+  const useRelativeApi = (!backendOrigin) && (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1');
+
+  if (mode === 'demo' || (!backendOrigin && !useRelativeApi)) {
+    simulateTypingThenReply(text, ()=> appendLocal('assistant', demoReply(text)));
+    statusEl.textContent = 'Mode: Demo (offline)';
+    return;
+  }
+
+  statusEl.textContent = 'Mode: Live (calling backend)...';
+  simulateTypingThenReply(text, async ()=> {
+    try {
+      const messagesForApi = conversation.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }));
+      let target;
+      if (backendOrigin) target = backendOrigin.replace(/\/$/, '') + '/api/chat';
+      else if (useRelativeApi) target = '/api/chat';
+      else throw new Error('No backend configured.');
+
+      const res = await fetch(target, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: messagesForApi })
+      });
+      const json = await res.json().catch(()=>({ ok:false, error:'Invalid JSON from server' }));
+      lastResponseEl.textContent = JSON.stringify(json, null, 2);
+
+      if (!json || !json.ok) {
+        const err = (json && (json.error || json.message)) || 'Invalid server response';
+        appendLocal('assistant', 'Server error: ' + err);
+        statusEl.textContent = 'Mode: Live (error)';
+        return;
+      }
+      const reply = (json.data && (json.data.reply || (json.data.raw && json.data.raw.choices && json.data.raw.choices[0] && json.data.raw.choices[0].message && json.data.raw.choices[0].message.content))) || '(empty reply)';
+      appendLocal('assistant', reply);
+      statusEl.textContent = 'Mode: Live (OK)';
+    } catch (err) {
+      appendLocal('assistant', 'Network error: ' + err.message);
+      lastResponseEl.textContent = 'Network error: ' + String(err);
+      statusEl.textContent = 'Mode: Live (network error)';
+      console.error(err);
+    }
+  });
+}
+
+connectBtn.addEventListener('click', ()=> {
+  const url = backendInput.value.trim();
+  if (!url) { alert('Enter your backend origin URL'); return; }
+  backendOrigin = url.replace(/\/$/, '');
+  statusEl.textContent = 'Connected (still Demo until Mode=Live)';
+  alert('Connected to backend at: ' + backendOrigin + '. Now set Mode → Live to use GPT.');
+});
+
+disconnectBtn.addEventListener('click', ()=> {
+  backendOrigin = '';
+  backendInput.value = '';
+  statusEl.textContent = 'Mode: Demo (disconnected)';
+  alert('Disconnected from backend.');
+});
+
+clearBtn.addEventListener('click', ()=> {
+  if (!confirm('Start a new chat? This clears local conversation.')) return;
+  conversation = [];
+  localStorage.removeItem(STORAGE_KEY);
+  render();
+});
+
+downloadConvBtn.addEventListener('click', ()=> {
+  const txt = conversation.map(m => `[${m.role.toUpperCase()} ${m.ts}]\\n${m.content}\\n\\n`).join('');
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'conversation.txt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
+
+document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
